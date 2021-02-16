@@ -1,4 +1,17 @@
+/*
+  const clr_darker = "#0d335d";
+  const clr_dark =  "#1a508b";
+  const clr_lite = "#c1a1d3";
+  const clr_liter =  "#fff3e6"
+*/
+
+body {
+  padding: 0;
+  margin: 0;
+  background-color: floralwhite;
+}
+
 #main-svg {
-  border: 1px solid blue;
   height: 50rem;
+  background-color: #fff3e6;
 }

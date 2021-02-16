@@ -4,12 +4,13 @@
   "description": "sorting algorithms visualizer",
   "main": "index.js",
   "dependencies": {
-    "bootstrap": "^4.6.0",
     "jquery": "^3.5.1",
-    "snapsvg": "^0.5.1",
     "snap": "^1.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "bootstrap": "^4.6.0",
+    "snapsvg": "^0.5.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

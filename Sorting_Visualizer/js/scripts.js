@@ -1,27 +1,43 @@
-
 const horizontal_offset = 10;
-const vertical_offset = 25;
-const block_width = 30;
-const block_height = 60;
+const vertical_offset = 25 + 50;
+const block_width = 45;
+const block_height = 35;
+const block_stroke_width = 3;
+const max_factor = 80;
+const min_factor = -20;
 const text_h_offset = 10;
 const text_v_offset = block_height;
-const numbers = [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+const numbers = [-10, 15, 14, 13, 12, 1, 1, 9, 15, -5, 6, 5, 4, 3, 300, 1];
 const sx = 20;
 const sy = 100;
+const animation_duration = 400;
+const duration_increment = 800;
+const length_factor = 3;
+
+const clr_darker = "#0d335d";
+const clr_dark =  "#1a508b";
+const clr_lite = "#c1a1d3";
+const clr_liter =  "#fff3e6"
+
+
+var snp;
 var texts;
 var rects;
+var duration = 0;
+
 
 $(document).ready(() => {
 
 
-    var snp = Snap("#main-svg");
-    let sx = 100;
+    snp = Snap("#main-svg");
     let sy = 100;
-    
+    let positions = init(snp);
+    $("#start-btn").click(() =>{
+            duration = 0;
+            merge_sort(0, 15, positions, sy , (sy + text_v_offset))
+        }
+    );
 
-
-    init(snp);
-    
 })
 
 
@@ -29,120 +45,229 @@ function init(snp){
 
     rects = [];
     texts = [];
+    let positions = [];
     for(let i = 0; i < 16; ++i){
-        let rect = snp.rect(sx + i * (block_width + horizontal_offset), sy, block_width, block_height);
+        let factor = Math.max(min_factor, Math.min(max_factor, length_factor * numbers[i]));
+
+        let rect = snp.rect(sx + i * (block_width + horizontal_offset),
+            sy  -  factor,
+            block_width, block_height + factor);
+
+        rect.attr({
+            fill: "#1a508b",
+            stroke: "green",
+            strokeWidth: block_stroke_width
+        })
+
         let text = snp.text(sx + i * (block_width + horizontal_offset) + text_h_offset, 
             sy + text_v_offset, numbers[i] );
+
         text.attr({fill: "white"})
+
         rects.push(rect);
         texts.push(text);
+        positions.push({
+            rectX: sx + i * (block_width + horizontal_offset),
+            rectY: sy,
+            textX: sx + i * (block_width + horizontal_offset) + text_h_offset,
+            textY: sy + text_v_offset
+        });
     }
+
+    return positions;
 }
     
 
-function swap(block1, block2){
-    let lx_rect = block1.select("rect:nth-child(1)").attr("x");
-    let lx_text = block1.select("text:nth-of-type(1)").attr("x");
-    
-    let rx_rect = block2.select("rect:nth-child(1)").attr("x");
-    let rx_text = block2.select("text:nth-of-type(1)").attr("x");
-    let duration = 200;
 
-    block1.select("rect:nth-child(1)").animate({x: rx_rect}, duration);
-    block2.select("rect:nth-child(1)").animate({x: lx_rect}, duration);
+function move_down(l, r, rectY, textY){
 
-    block1.select("text:nth-of-type(1)").animate({x: rx_text}, duration);
-    block2.select("text:nth-of-type(1)").animate({x: lx_text}, duration);
-}   
+    let tempRect = rects.slice(l, r + 1);
+    let tempText = texts.slice(l, r + 1);
 
-function move_down(grp, rect_y, text_y){
-
-    let duration = 300;
-    rect_y = rect_y + vertical_offset + block_height;
-    text_y = text_y + vertical_offset + block_height;
-    grp.selectAll("rect").animate({y: rect_y}, duration);
-    grp.selectAll("text").animate({y: text_y}, duration);
+    rectY = rectY + vertical_offset + block_height;
+    textY = textY + vertical_offset + block_height;
     
 
-    return {rect_y: rect_y, text_y: text_y};
+    setTimeout( () => {
+        for(let i = l; i <= r; ++ i){
+            let factor =  parseInt(tempRect[i - l].attr("height")) - block_height;
+            tempRect[i - l].animate({y: rectY - factor}, animation_duration, mina.linear);
+            tempText[i - l].animate({y: textY}, animation_duration, mina.linear);
+        }
+    }, duration);
+    
+    return {rectY: rectY, textY: textY};
 }
 
 
-function move_up(grp, rect_y, text_y){
+function color_stroke_range(l, r, color){
 
-    let duration = 300;
-    rect_y = rect_y - vertical_offset - block_height;
-    text_y = text_y - vertical_offset - block_height;
-    grp.selectAll("rect").animate({y: rect_y}, duration);
-    grp.selectAll("text").animate({y: text_y}, duration);
-    
-
-    return {rect_y: rect_y, text_y: text_y};
+    let tempRect = rects.slice(l, r + 1);
+    setTimeout( 
+        () => tempRect.forEach(rect => rect.attr({stroke: color})),
+        duration);
 }
 
-void merge(int arr[], int l, int m, int r)
-{
-    int n1 = m - l + 1;
-    int n2 = r - m;
+function color_stroke(element, color){
+    setTimeout( 
+        () => element.attr({stroke: color}),
+        duration);
+}
+
+
+function move(element, newX, newY, isText){
+
+    setTimeout( () => element.animate({
+            x: newX,
+            y: newY - ( (isText) ? (parseInt(element.attr("height")) - block_height) : 0 )
+    }, animation_duration, mina.easeinout), duration);
+}
+
  
-    // Create temp arrays
-    int L[n1], R[n2];
- 
-    // Copy data to temp arrays L[] and R[]
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
- 
-    // Merge the temp arrays back into arr[l..r]
- 
-    // Initial index of first subarray
-    int i = 0;
- 
-    // Initial index of second subarray
-    int j = 0;
- 
-    // Initial index of merged subarray
-    int k = l;
- 
+function merge_sort(l, r, org, rectY, textY){
+    if(l>=r)
+        return;
+  
+
+    color_stroke_range(l, r, "red");
+    duration += duration_increment / 2;
+
+    let obj = move_down(l, r, rectY, textY);
+    duration += duration_increment;
+    rectY = obj.rectY;
+    textY = obj.textY;
+
+    color_stroke_range(l, r, "green");
+    duration += duration_increment / 2;
+
+    
+    let m = (l + Math.floor((r-l)/2)) | 0;
+
+    let org_left = [];
+    let org_right = [];
+
+
+    for(let i = 0; i < org.length; ++i){
+        org_left.push({
+            rectX: org[i].rectX, 
+            textX: org[i].textX, 
+            rectY: rectY,
+            textY: textY
+        })
+
+        org_right.push({
+            rectX: org[i].rectX, 
+            textX: org[i].textX, 
+            rectY: rectY,
+            textY: textY
+        })
+    }
+
+    merge_sort(l,m,  org_left, rectY, textY)
+    merge_sort(m+1,r, org_right, rectY, textY);
+    
+
+    merge(l, m, r, org);
+
+}
+
+
+function merge(l, m, r, org){
+
+    let n1 = m - l + 1;
+    let n2 = r - m;
+    
+
+    let L_rects = [], R_rects = [];
+    let L_texts = [], R_texts = [];
+    let Lnums = [], Rnums = [];
+
+    for (let i = 0; i < n1; i++){
+        L_rects.push(rects[l + i]);
+        L_texts.push(texts[l + i]);
+        Lnums.push(numbers[l + i]);
+    }
+    for (let j = 0; j < n2; j++){
+        R_rects.push(rects[m + 1 + j]);
+        R_texts.push(texts[m + 1 + j]);
+        Rnums.push(numbers[m + 1 + j]);
+    }
+
+    let i = 0, j = 0, k = l;
+
     while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
+
+        let left = L_rects[i];
+        let right = R_rects[j];
+
+        color_stroke(left, "red");
+        color_stroke(right, "red");
+        duration += duration_increment / 2;
+
+        if (Lnums[i] <= Rnums[j]) {
+            
+            move(L_rects[i], org[k].rectX, org[k].rectY, true);
+            move(L_texts[i], org[k].textX, org[k].textY, false);
+            duration += duration_increment;
+            
+            rects[k] = L_rects[i];
+            texts[k] = L_texts[i];
+            numbers[k] = Lnums[i];
             i++;
         }
         else {
-            arr[k] = R[j];
+            move(R_rects[j], org[k].rectX, org[k].rectY, true);
+            move(R_texts[j], org[k].textX, org[k].textY, false);
+            duration += duration_increment;
+
+            rects[k] = R_rects[j];
+            texts[k] = R_texts[j];
+            numbers[k] = Rnums[j];
             j++;
         }
+
+        color_stroke(left, "green");
+        color_stroke(right, "green");
+        duration += duration_increment / 2;
+
         k++;
     }
- 
-    // Copy the remaining elements of
-    // L[], if there are any
+
     while (i < n1) {
-        arr[k] = L[i];
+
+        color_stroke(L_rects[i], "red");
+        duration += duration_increment / 2;
+
+        move(L_rects[i], org[k].rectX, org[k].rectY, true);
+        move(L_texts[i], org[k].textX, org[k].textY, false);
+        duration += duration_increment;
+
+        color_stroke(L_rects[i], "green");
+        duration += duration_increment / 2;
+
+        rects[k] = L_rects[i];
+        texts[k] = L_texts[i];
+        numbers[k] = Lnums[i];
         i++;
         k++;
     }
- 
-    // Copy the remaining elements of
-    // R[], if there are any
+
     while (j < n2) {
-        arr[k] = R[j];
+
+        color_stroke(R_rects[j], "red");
+        duration += duration_increment / 2;
+
+        move(R_rects[j], org[k].rectX, org[k].rectY, true);
+        move(R_texts[j], org[k].textX, org[k].textY, false);
+        duration += duration_increment;
+
+        color_stroke(R_rects[j], "green");
+        duration += duration_increment / 2;
+
+        rects[k] = R_rects[j];
+        texts[k] = R_texts[j];
+        numbers[k] = Rnums[j];
         j++;
         k++;
     }
-}
- 
-// l is for left index and r is
-// right index of the sub-array
-// of arr to be sorted */
-void mergeSort(int arr[],int l,int r){
-    if(l>=r){
-        return;//returns recursively
-    }
-    int m =l+ (r-l)/2;
-    mergeSort(arr,l,m);
-    mergeSort(arr,m+1,r);
-    merge(arr,l,m,r);
 }

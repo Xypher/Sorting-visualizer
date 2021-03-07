@@ -15,3 +15,8 @@ body {
   height: 50rem;
   background-color: #fff3e6;
 }
+
+#sidebar {
+  background: #1a508b;
+  padding-bottom: 30rem;
+}

@@ -10,14 +10,16 @@ const text_v_offset = block_height;
 
 const sx = 20;
 const sy = 100;
-const animation_duration = 200;
-const duration_increment = 400;
+
 const length_factor = 1.5;
 
 const clr_darker = "#0d335d";
 const clr_dark =  "#1a508b";
 const clr_lite = "#c1a1d3";
 const clr_liter =  "#fff3e6"
+
+var animation_duration = 200;
+var duration_increment = 400;
 
 var default_numbers = [-10, 15, 14, 13, 12, 1, 1, 9, 15, -5, 6, 5, 4, 3, 300, 1];
 var snp;

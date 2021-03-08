@@ -1,0 +1,12 @@
+# Sorting-visualizer
+
+Sorting algorithm visualization 
+utilizing javascript and svg technologies
+
+you can watch a video of the 
+application at: https://www.youtube.com/watch?v=StKUcVjePSw
+
+if you wish to run the application on your browser:-
+    -pull the project to a local repository
+    -use npm to install required node modules
+    -in the command line type: npm run dev 
